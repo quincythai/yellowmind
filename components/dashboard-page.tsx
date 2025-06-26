@@ -1,30 +1,27 @@
 "use client"
+
 import { DashboardShell } from "@/components/dashboard-shell"
-import { ModuleHero } from "@/components/module-hero"
-import { DailyShort } from "@/components/daily-short"
-import { ProgressSection } from "@/components/progress-section"
-import { QuickActions } from "@/components/quick-actions"
+import { SimpleModuleHero } from "@/components/simple-module-hero"
+import { TodaysMindShort } from "@/components/todays-mind-short"
+import { RightSidebarCards } from "@/components/right-sidebar-cards"
 import { MindChatbot } from "@/components/mind-chatbot"
 
 export function DashboardPage() {
   return (
     <DashboardShell>
       <div className="flex flex-col gap-8">
-        {/* Hero Section - Current Module */}
-        <ModuleHero />
+        {/* Hero Section */}
+        <SimpleModuleHero />
 
-        {/* Daily Content & Progress */}
+        {/* Main grid: Daily Short (⅔) | Stacked Cards (⅓) */}
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <DailyShort />
+            <TodaysMindShort />
           </div>
-          <div>
-            <ProgressSection />
+          <div className="lg:col-span-1">
+            <RightSidebarCards />
           </div>
         </div>
-
-        {/* Quick Actions */}
-        <QuickActions />
       </div>
 
       {/* Sticky AI Chatbot */}

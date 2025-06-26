@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Brain, Home, BookOpen, BarChart, Calendar, CalendarCheck } from "lucide-react"
+import { Brain, Home, BookOpen, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function MainNav() {
@@ -28,31 +28,12 @@ export function MainNav() {
           </Link>
         </Button>
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/progress" className="flex items-center gap-2">
-            <BarChart className="h-4 w-4" />
-            Progress
-          </Link>
-        </Button>
-        <Button variant="ghost" size="sm" asChild>
           <Link href="/schedule" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Schedule
           </Link>
         </Button>
       </nav>
-
-      {/* Always visible Book Appointment button */}
-      <div className="ml-auto">
-        <Button
-          asChild
-          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
-        >
-          <Link href="/book-appointment" className="flex items-center gap-2">
-            <CalendarCheck className="h-4 w-4" />
-            Book Appointment
-          </Link>
-        </Button>
-      </div>
     </div>
   )
 }

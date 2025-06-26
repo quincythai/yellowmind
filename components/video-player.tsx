@@ -1,31 +1,41 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Play, Pause, Volume2, VolumeX, Maximize, Settings, SkipBack, SkipForward, ArrowRight } from "lucide-react"
+import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Settings,
+  SkipBack,
+  SkipForward,
+  ArrowRight,
+} from "lucide-react";
 
 interface VideoPlayerProps {
-  isCompleted: boolean
-  onComplete: () => void
+  isCompleted: boolean;
+  onComplete: () => void;
 }
 
 export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
-  const [currentTime, setCurrentTime] = useState(245) // 4:05
-  const [duration] = useState(1200) // 20:00
-  const [showControls, setShowControls] = useState(true)
-  const videoRef = useRef<HTMLDivElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(245); // 4:05
+  const [duration] = useState(1200); // 20:00
+  const [showControls, setShowControls] = useState(true);
+  const videoRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
-  const progressPercentage = (currentTime / duration) * 100
+  const progressPercentage = (currentTime / duration) * 100;
 
   return (
     <div className="space-y-6">
@@ -60,8 +70,9 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
           {/* Subtitles */}
           <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded text-center max-w-4xl">
             <p className="text-lg">
-              "Building emotional resilience is like strengthening a muscle. The more you practice these techniques, the
-              stronger your ability to bounce back from challenges becomes."
+              "Building emotional resilience is like strengthening a muscle. The
+              more you practice these techniques, the stronger your ability to
+              bounce back from challenges becomes."
             </p>
           </div>
 
@@ -70,7 +81,10 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
               {/* Progress Bar */}
               <div className="mb-4">
-                <Progress value={progressPercentage} className="h-1 bg-white/20 cursor-pointer" />
+                <Progress
+                  value={progressPercentage}
+                  className="h-1 bg-white/20 cursor-pointer"
+                />
               </div>
 
               {/* Control Buttons */}
@@ -82,14 +96,26 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
                     className="text-white hover:bg-white/20"
                     onClick={() => setIsPlaying(!isPlaying)}
                   >
-                    {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                    {isPlaying ? (
+                      <Pause className="h-5 w-5" />
+                    ) : (
+                      <Play className="h-5 w-5" />
+                    )}
                   </Button>
 
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20"
+                  >
                     <SkipBack className="h-4 w-4" />
                   </Button>
 
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20"
+                  >
                     <SkipForward className="h-4 w-4" />
                   </Button>
 
@@ -99,7 +125,11 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
                     className="text-white hover:bg-white/20"
                     onClick={() => setIsMuted(!isMuted)}
                   >
-                    {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                    {isMuted ? (
+                      <VolumeX className="h-5 w-5" />
+                    ) : (
+                      <Volume2 className="h-5 w-5" />
+                    )}
                   </Button>
 
                   <span className="text-sm">
@@ -108,11 +138,19 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20"
+                  >
                     <Settings className="h-5 w-5" />
                   </Button>
 
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20"
+                  >
                     <Maximize className="h-5 w-5" />
                   </Button>
                 </div>
@@ -127,8 +165,8 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
         <div className="space-y-1">
           <h2 className="text-2xl font-bold">Emotional Resilience Building</h2>
           <p className="text-muted-foreground">
-            Learn practical techniques to build emotional resilience and bounce back from life's challenges with greater
-            strength and clarity.
+            Learn practical techniques to build emotional resilience and bounce
+            back from life's challenges with greater strength and clarity.
           </p>
         </div>
 
@@ -149,11 +187,15 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
           <ul className="space-y-2 text-sm">
             <li className="flex items-start gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-              <span>Resilience is a skill that can be developed through practice</span>
+              <span>
+                Resilience is a skill that can be developed through practice
+              </span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
-              <span>The 4-7-8 breathing technique helps regulate emotional responses</span>
+              <span>
+                The 4-7-8 breathing technique helps regulate emotional responses
+              </span>
             </li>
             <li className="flex items-start gap-2">
               <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -165,7 +207,8 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
         <Card className="p-6">
           <h3 className="font-semibold mb-4">Practice Exercise</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Try the resilience-building exercise demonstrated in this lesson for the next 7 days.
+            Try the resilience-building exercise demonstrated in this lesson for
+            the next 7 days.
           </p>
           <Button variant="outline" className="w-full">
             Download Exercise Guide
@@ -173,5 +216,5 @@ export function VideoPlayer({ isCompleted, onComplete }: VideoPlayerProps) {
         </Card>
       </div>
     </div>
-  )
+  );
 }

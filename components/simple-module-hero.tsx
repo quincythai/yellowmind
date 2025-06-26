@@ -2,16 +2,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Play, Clock, BookOpen, ChevronRight, CheckCircle2, Circle } from "lucide-react"
+import { Play, Clock, BookOpen, ChevronRight } from "lucide-react"
 
-export function EnhancedModuleHero() {
-  const upcomingLessons = [
-    { id: 1, title: "Breathing Techniques for Stress", completed: true },
-    { id: 2, title: "Progressive Muscle Relaxation", completed: true },
-    { id: 3, title: "Cognitive Reframing Methods", completed: false, current: true },
-    { id: 4, title: "Mindful Response vs Reaction", completed: false },
-  ]
-
+export function SimpleModuleHero() {
   return (
     <Card className="overflow-hidden bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 border-0 text-white">
       <CardContent className="p-8">
@@ -61,9 +54,8 @@ export function EnhancedModuleHero() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            {/* Video Preview */}
-            <div className="aspect-video rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 relative">
+          <div className="relative">
+            <div className="aspect-video rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
               <img
                 src="/placeholder.svg?height=300&width=500"
                 alt="Module preview"
@@ -73,23 +65,6 @@ export function EnhancedModuleHero() {
                 <Button size="lg" className="rounded-full w-16 h-16 bg-white/90 text-yellow-600 hover:bg-white">
                   <Play className="h-6 w-6 ml-1" />
                 </Button>
-              </div>
-            </div>
-
-            {/* Upcoming Lessons Preview */}
-            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
-              <h3 className="font-semibold mb-3 text-sm">Upcoming Lessons</h3>
-              <div className="space-y-2">
-                {upcomingLessons.slice(0, 3).map((lesson) => (
-                  <div key={lesson.id} className="flex items-center gap-3 text-sm">
-                    {lesson.completed ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-300" />
-                    ) : (
-                      <Circle className={`h-4 w-4 ${lesson.current ? "text-yellow-200" : "text-white/50"}`} />
-                    )}
-                    <span className={lesson.current ? "font-medium" : "text-white/80"}>{lesson.title}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>

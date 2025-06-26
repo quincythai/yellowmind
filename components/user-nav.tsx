@@ -8,11 +8,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, Settings } from "lucide-react"
+import { Bell, Settings, CalendarCheck } from "lucide-react"
 
 export function UserNav() {
   return (
     <div className="flex items-center gap-3">
+      {/* Book Appointment Button - moved here */}
+      <Button
+        asChild
+        size="sm"
+        className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+      >
+        <a href="/book-appointment" className="flex items-center gap-2">
+          <CalendarCheck className="h-4 w-4" />
+          Book Appointment
+        </a>
+      </Button>
+
       <Button variant="ghost" size="icon" className="relative">
         <Bell className="h-5 w-5" />
         <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-yellow-500"></span>

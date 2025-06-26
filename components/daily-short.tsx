@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Play, ThumbsUp, MessageCircle, Share, Clock } from "lucide-react"
+import { Play, ThumbsUp, MessageCircle, Share, Clock, Bookmark } from "lucide-react"
 
 export function DailyShort() {
   return (
@@ -12,10 +12,15 @@ export function DailyShort() {
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             Today's Mind Short
           </CardTitle>
-          <Badge variant="outline" className="text-xs">
-            <Clock className="w-3 h-3 mr-1" />
-            2:34
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              <Clock className="w-3 h-3 mr-1" />
+              2:34
+            </Badge>
+            <Button variant="ghost" size="sm">
+              <Bookmark className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -39,6 +44,7 @@ export function DailyShort() {
           <h3 className="font-semibold text-lg">5 Signs You're More Self-Aware Than You Think</h3>
           <p className="text-muted-foreground text-sm">
             Discover the subtle indicators of emotional intelligence that you might be overlooking in your daily life.
+            Learn to recognize these signs and build upon your existing self-awareness.
           </p>
 
           <div className="flex items-center justify-between pt-2">
@@ -55,7 +61,12 @@ export function DailyShort() {
                 <Share className="h-4 w-4" />
               </Button>
             </div>
-            <Button size="sm">Watch Now</Button>
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+            >
+              Watch Now
+            </Button>
           </div>
         </div>
       </CardContent>

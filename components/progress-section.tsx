@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Flame, Trophy, Target, Calendar, TrendingUp } from "lucide-react"
 
-export function EnhancedProgressSection() {
+export function ProgressSection() {
   return (
     <div className="grid gap-6 md:grid-cols-3">
       {/* Daily Streak */}

@@ -2,9 +2,16 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Play, Clock, BookOpen, ChevronRight } from "lucide-react"
+import { Play, Clock, BookOpen, ChevronRight, CheckCircle2, Circle } from "lucide-react"
 
 export function ModuleHero() {
+  const upcomingLessons = [
+    { id: 1, title: "Breathing Techniques for Stress", completed: true },
+    { id: 2, title: "Progressive Muscle Relaxation", completed: true },
+    { id: 3, title: "Cognitive Reframing Methods", completed: false, current: true },
+    { id: 4, title: "Mindful Response vs Reaction", completed: false },
+  ]
+
   return (
     <Card className="overflow-hidden bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 border-0 text-white">
       <CardContent className="p-8">
@@ -14,9 +21,10 @@ export function ModuleHero() {
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                 Module 3 of 8
               </Badge>
-              <h1 className="text-3xl lg:text-4xl font-bold leading-tight">Emotional Intelligence & Self-Awareness</h1>
+              <h1 className="text-3xl lg:text-4xl font-bold leading-tight">Self-Regulation Tool Kit</h1>
               <p className="text-yellow-100 text-lg">
-                Master the art of understanding your emotions and developing deeper self-awareness for personal growth.
+                Identify and manage your overall stress, helping you find YELLOW. Introducing a toolkit of simple,
+                self-regulation tools that you can use to manage stress.
               </p>
             </div>
 
@@ -24,7 +32,7 @@ export function ModuleHero() {
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  <span>4 weeks</span>
+                  <span>8 hours</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <BookOpen className="h-4 w-4" />
@@ -46,15 +54,16 @@ export function ModuleHero() {
                 <Play className="mr-2 h-5 w-5" />
                 Continue Learning
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10g-slate-500 bg-slate-600 bg-slate-600 bg-slate-600 bg-slate-600 bg-slate-600 bg-slate-500 bg-slate-500 bg-slate-600 bg-slate-500 bg-slate-400 bg-slate-400 bg-slate-300 bg-slate-200 bg-slate-100 bg-transparent bg-transparent bg-white bg-slate-200 bg-slate-100 bg-slate-50 bg-white bg-black10050-500-300-200-100parent-100-200-300-400-500-600-200">
+              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
                 View All Lessons
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="relative">
-            <div className="aspect-video rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
+          <div className="space-y-4">
+            {/* Video Preview */}
+            <div className="aspect-video rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 relative">
               <img
                 src="/placeholder.svg?height=300&width=500"
                 alt="Module preview"
@@ -64,6 +73,23 @@ export function ModuleHero() {
                 <Button size="lg" className="rounded-full w-16 h-16 bg-white/90 text-yellow-600 hover:bg-white">
                   <Play className="h-6 w-6 ml-1" />
                 </Button>
+              </div>
+            </div>
+
+            {/* Upcoming Lessons Preview */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
+              <h3 className="font-semibold mb-3 text-sm">Upcoming Lessons</h3>
+              <div className="space-y-2">
+                {upcomingLessons.slice(0, 3).map((lesson) => (
+                  <div key={lesson.id} className="flex items-center gap-3 text-sm">
+                    {lesson.completed ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-300" />
+                    ) : (
+                      <Circle className={`h-4 w-4 ${lesson.current ? "text-yellow-200" : "text-white/50"}`} />
+                    )}
+                    <span className={lesson.current ? "font-medium" : "text-white/80"}>{lesson.title}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

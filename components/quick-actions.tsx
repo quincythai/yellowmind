@@ -1,6 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BookOpen, Users, Calendar, MessageSquare, BarChart, Settings } from "lucide-react"
+import {
+  BookOpen,
+  Users,
+  Calendar,
+  MessageSquare,
+  BarChart,
+  Settings,
+  FileText,
+  Award,
+  Phone,
+  Download,
+} from "lucide-react"
 
 export function QuickActions() {
   const actions = [
@@ -46,6 +57,34 @@ export function QuickActions() {
       color: "text-gray-600",
       bgColor: "bg-gray-50",
     },
+    {
+      icon: FileText,
+      title: "Journal",
+      description: "Access your reflection journal",
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50",
+    },
+    {
+      icon: Award,
+      title: "Certificates",
+      description: "View your earned certificates",
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50",
+    },
+    {
+      icon: Phone,
+      title: "Contact Us",
+      description: "Get help with any questions",
+      color: "text-pink-600",
+      bgColor: "bg-pink-50",
+    },
+    {
+      icon: Download,
+      title: "Resources",
+      description: "Download course materials",
+      color: "text-teal-600",
+      bgColor: "bg-teal-50",
+    },
   ]
 
   return (
@@ -54,7 +93,7 @@ export function QuickActions() {
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {actions.map((action, index) => (
             <Button key={index} variant="ghost" className="h-auto p-4 justify-start text-left" asChild>
               <div className="space-y-2">
@@ -62,8 +101,8 @@ export function QuickActions() {
                   <action.icon className={`h-5 w-5 ${action.color}`} />
                 </div>
                 <div>
-                  <div className="font-medium">{action.title}</div>
-                  <div className="text-sm text-muted-foreground">{action.description}</div>
+                  <div className="font-medium text-sm">{action.title}</div>
+                  <div className="text-xs text-muted-foreground">{action.description}</div>
                 </div>
               </div>
             </Button>
