@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Lock, CreditCard, Mail, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { loadStripe } from "@stripe/stripe-js";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,6 +15,22 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, isLoading, hasActiveSubscription } = useAuth();
+
+  const stripePromise = loadStripe(
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+  );
+
+  const redirectToCheckout = async () => {
+    const stripe = await stripePromise;
+    const res = await fetch("/api/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: user.email, uid: user.uid }),
+    });
+
+    const data = await res.json();
+    await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+  };
 
   // Loading state
   if (isLoading) {
@@ -123,7 +140,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
                 asChild
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               >
-                <Link href="/subscription">Subscribe</Link>
+                <Link href="/subscription" onClick={redirectToCheckout}>
+                  Subscribe
+                </Link>
               </Button>
               <Button
                 asChild
