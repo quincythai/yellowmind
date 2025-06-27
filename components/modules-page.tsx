@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { DashboardShell } from "@/components/dashboard-shell"
-import { ModulesList } from "@/components/modules-list"
-import { CourseProgress } from "@/components/course-progress"
-import { MindChatbot } from "@/components/mind-chatbot"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ModulesList } from "@/components/modules-list";
+import { CourseProgress } from "@/components/course-progress";
+import { MindChatbot } from "@/components/mind-chatbot";
 
 export function ModulesPage() {
   return (
@@ -13,7 +13,8 @@ export function ModulesPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Course Modules</h1>
           <p className="text-muted-foreground text-lg">
-            Master emotional intelligence through our comprehensive learning modules
+            Master emotional intelligence through our comprehensive learning
+            modules
           </p>
         </div>
 
@@ -27,5 +28,5 @@ export function ModulesPage() {
       {/* AI Chatbot */}
       <MindChatbot />
     </DashboardShell>
-  )
+  );
 }

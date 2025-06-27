@@ -6,13 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Brain, Mail, Clock, CheckCircle2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
 
 export function SignupCompletePage() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
+  const router = useRouter();
   const [canResend, setCanResend] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [emailSent, setEmailSent] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const user = auth.currentUser;
+      if (user) {
+        await user.reload(); // force refresh of emailVerified status
+        if (user.emailVerified) {
+          router.push("/subscription");
+        }
+      }
+    }, 3000); // checks every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -154,6 +171,14 @@ export function SignupCompletePage() {
                   Resend Verification Email
                 </>
               )}
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => router.push("/")}
+              className="w-full bg-transparent"
+            >
+              <Link href="/">Go to Dashboard</Link>
             </Button>
           </div>
 

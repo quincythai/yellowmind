@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardShell } from "@/components/dashboard-shell"
-import { AppointmentCalendar } from "@/components/appointment-calendar"
-import { UpcomingAppointments } from "@/components/upcoming-appointments"
-import { AppointmentModal } from "@/components/appointment-modal"
-import { MindChatbot } from "@/components/mind-chatbot"
+import { useState } from "react";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { AppointmentCalendar } from "@/components/appointment-calendar";
+import { UpcomingAppointments } from "@/components/upcoming-appointments";
+import { AppointmentModal } from "@/components/appointment-modal";
+import { MindChatbot } from "@/components/mind-chatbot";
 
 // Mock appointment data
 const mockAppointments = [
@@ -63,27 +63,29 @@ const mockAppointments = [
     meetingLink: "https://zoom.us/j/987654321",
     notes: "Prepare specific relationship scenarios to discuss",
   },
-]
+];
 
 export function SchedulePage() {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [selectedAppointment, setSelectedAppointment] = useState<any>(null)
-  const [showModal, setShowModal] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const handleDateClick = (date: Date) => {
-    const appointment = mockAppointments.find((apt) => apt.date.toDateString() === date.toDateString())
+    const appointment = mockAppointments.find(
+      (apt) => apt.date.toDateString() === date.toDateString()
+    );
 
     if (appointment) {
-      setSelectedAppointment(appointment)
-      setShowModal(true)
+      setSelectedAppointment(appointment);
+      setShowModal(true);
     }
-    setSelectedDate(date)
-  }
+    setSelectedDate(date);
+  };
 
   const handleCloseModal = () => {
-    setShowModal(false)
-    setSelectedAppointment(null)
-  }
+    setShowModal(false);
+    setSelectedAppointment(null);
+  };
 
   return (
     <DashboardShell>
@@ -92,7 +94,9 @@ export function SchedulePage() {
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold">My Schedule</h1>
-            <p className="text-muted-foreground text-lg">Manage your coaching appointments and sessions</p>
+            <p className="text-muted-foreground text-lg">
+              Manage your coaching appointments and sessions
+            </p>
           </div>
         </div>
 
@@ -112,8 +116,8 @@ export function SchedulePage() {
             <UpcomingAppointments
               appointments={mockAppointments}
               onAppointmentClick={(appointment) => {
-                setSelectedAppointment(appointment)
-                setShowModal(true)
+                setSelectedAppointment(appointment);
+                setShowModal(true);
               }}
             />
           </div>
@@ -121,11 +125,14 @@ export function SchedulePage() {
 
         {/* Appointment Detail Modal */}
         {showModal && selectedAppointment && (
-          <AppointmentModal appointment={selectedAppointment} onClose={handleCloseModal} />
+          <AppointmentModal
+            appointment={selectedAppointment}
+            onClose={handleCloseModal}
+          />
         )}
       </div>
 
       <MindChatbot />
     </DashboardShell>
-  )
+  );
 }

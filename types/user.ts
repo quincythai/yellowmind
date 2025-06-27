@@ -6,6 +6,6 @@ export interface AppUser {
     phone?: string
     subscribeNewsletter?: boolean
     createdAt?: any // optional, usually Timestamp from Firestore
-    isVerified: boolean
+    hasActiveSubscription: boolean,
   }
   

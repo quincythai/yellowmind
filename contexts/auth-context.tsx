@@ -59,7 +59,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const user = userCredential.user;
 
-      await sendEmailVerification(userCredential.user);
+      // TODO: Change to production URL
+      const actionCodeSettings = {
+        url: "http://localhost:3000/", // Local redirect
+        handleCodeInApp: false,
+      };
+
+      await sendEmailVerification(userCredential.user, actionCodeSettings);
 
       // Optional: set display name
       await updateProfile(user, {
@@ -75,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         phone: data.phone,
         subscribeNewsletter: data.subscribeNewsletter ?? false,
         createdAt: serverTimestamp(),
-        isVerified: false,
+        hasActiveSubscription: false,
       });
 
       setUser(user);
