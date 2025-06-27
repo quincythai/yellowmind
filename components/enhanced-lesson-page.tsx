@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { LessonSidebar } from "@/components/lesson-sidebar"
-import { EnhancedVideoPlayer } from "@/components/enhanced-video-player"
-import { LessonHeader } from "@/components/lesson-header"
-import { MindChatbot } from "@/components/mind-chatbot"
+import { useState } from "react";
+import { LessonSidebar } from "@/components/lesson-sidebar";
+import { VideoPlayer } from "@/components/video-player";
+import { LessonHeader } from "@/components/lesson-header";
+import { MindChatbot } from "@/components/mind-chatbot";
 
-export function EnhancedLessonPage() {
-  const [isCompleted, setIsCompleted] = useState(false)
+export function LessonPage() {
+  const [isCompleted, setIsCompleted] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50">
@@ -20,7 +20,10 @@ export function EnhancedLessonPage() {
 
         <main className="flex-1 p-6">
           <div className="max-w-6xl mx-auto">
-            <EnhancedVideoPlayer isCompleted={isCompleted} onComplete={() => setIsCompleted(true)} />
+            <VideoPlayer
+              isCompleted={isCompleted}
+              onComplete={() => setIsCompleted(true)}
+            />
           </div>
         </main>
       </div>
@@ -28,5 +31,5 @@ export function EnhancedLessonPage() {
       {/* AI Chatbot */}
       <MindChatbot />
     </div>
-  )
+  );
 }

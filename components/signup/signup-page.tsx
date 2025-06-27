@@ -3,17 +3,31 @@
 import type React from "react";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Brain, Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
+import {
+  Brain,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 
 export function SignupPage() {
+  const { signup, isLoading } = useAuth();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -25,10 +39,29 @@ export function SignupPage() {
     subscribeNewsletter: true,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log("Signup attempt:", formData);
+    setError("");
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (!formData.agreeToTerms) {
+      setError("You must agree to the Terms of Service");
+      return;
+    }
+
+    try {
+      await signup(formData);
+      router.push(
+        `/signup-complete?email=${encodeURIComponent(formData.email)}`
+      );
+    } catch (err) {
+      setError("Failed to create account. Please try again.");
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -68,6 +101,13 @@ export function SignupPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Error Message */}
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -84,6 +124,7 @@ export function SignupPage() {
                       }
                       className="pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -101,6 +142,7 @@ export function SignupPage() {
                       }
                       className="pl-10"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -119,13 +161,14 @@ export function SignupPage() {
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="pl-10"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
               {/* Phone Field */}
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="phone">Phone Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -135,6 +178,8 @@ export function SignupPage() {
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     className="pl-10"
+                    required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -154,6 +199,7 @@ export function SignupPage() {
                     }
                     className="pl-10 pr-10"
                     required
+                    disabled={isLoading}
                   />
                   <Button
                     type="button"
@@ -161,6 +207,7 @@ export function SignupPage() {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -186,6 +233,7 @@ export function SignupPage() {
                     }
                     className="pl-10 pr-10"
                     required
+                    disabled={isLoading}
                   />
                   <Button
                     type="button"
@@ -193,6 +241,7 @@ export function SignupPage() {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    disabled={isLoading}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
@@ -224,6 +273,7 @@ export function SignupPage() {
                       handleInputChange("agreeToTerms", checked as boolean)
                     }
                     required
+                    disabled={isLoading}
                   />
                   <Label
                     htmlFor="terms"
@@ -256,6 +306,7 @@ export function SignupPage() {
                         checked as boolean
                       )
                     }
+                    disabled={isLoading}
                   />
                   <Label htmlFor="newsletter" className="text-sm font-normal">
                     Send me helpful tips, course updates, and special offers
@@ -267,9 +318,16 @@ export function SignupPage() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold py-2"
-                disabled={!formData.agreeToTerms}
+                disabled={!formData.agreeToTerms || isLoading}
               >
-                Create Account
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
 
               {/* Divider */}
@@ -286,7 +344,7 @@ export function SignupPage() {
 
               {/* Social Signup Buttons */}
               <div className="grid grid-cols-2 gap-4">
-                <Button variant="outline" type="button">
+                <Button variant="outline" type="button" disabled={isLoading}>
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -307,7 +365,7 @@ export function SignupPage() {
                   </svg>
                   Google
                 </Button>
-                <Button variant="outline" type="button">
+                <Button variant="outline" type="button" disabled={isLoading}>
                   <svg
                     className="mr-2 h-4 w-4"
                     fill="currentColor"
