@@ -11,14 +11,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export async function POST(req: Request) {
+  // 1️⃣ Read raw body + signature
   const buf = await req.arrayBuffer();
   const signature = req.headers.get("stripe-signature")!;
 
+  // 2️⃣ Check webhook secret
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     console.error("❌ STRIPE_WEBHOOK_SECRET is not configured");
     return new NextResponse("Webhook secret not configured", { status: 500 });
   }
 
+  // 3️⃣ Verify event integrity
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(
@@ -33,37 +36,41 @@ export async function POST(req: Request) {
 
   console.log("🔔 Stripe Event:", event.type);
 
+  // Centralized upsert logic
   async function handleSubscriptionUpdate(
     sub: Stripe.Subscription,
     fallbackUid?: string
   ) {
+    // Get your user’s UID from metadata
     const firebaseUid = sub.metadata.uid || fallbackUid;
     if (!firebaseUid) {
       console.warn("⚠️ No UID for subscription", sub.id);
       return;
     }
 
+    // Build the data payload, using JS Date (Admin SDK auto-converts)
     const data = {
       userId: firebaseUid,
       priceId: sub.items.data[0].price.id,
       status: sub.status,
-      currentPeriodStart: new Date(sub.current_period_start * 1000),
-      currentPeriodEnd:   new Date(sub.current_period_end   * 1000),
-      cancelAtPeriodEnd:  sub.cancelAtPeriodEnd ?? false,
+      currentPeriodStart: new Date((sub.current_period_start ?? 0) * 1000),
+      currentPeriodEnd:   new Date((sub.current_period_end   ?? 0) * 1000),
+      cancelAtPeriodEnd:  sub.cancel_at_period_end ?? false,
     };
 
-    // upsert subscription
+    // 4️⃣ Upsert subscription doc
     await adminDb
       .doc(`subscriptions/${sub.id}`)
       .set(data, { merge: true });
 
-    // update user's subscription flag
+    // 5️⃣ Update the user’s “hasActiveSubscription” flag
     const isActive = ["active", "trialing"].includes(sub.status);
     await adminDb
       .doc(`users/${firebaseUid}`)
       .set({ hasActiveSubscription: isActive }, { merge: true });
   }
 
+  // 6️⃣ Route events
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -90,9 +97,9 @@ export async function POST(req: Request) {
       const sub = event.data.object as Stripe.Subscription;
       const firebaseUid = sub.metadata.uid as string | undefined;
       if (firebaseUid) {
-        // delete subscription doc
+        // Delete the subscription record
         await adminDb.doc(`subscriptions/${sub.id}`).delete();
-        // mark user as unsubscribed
+        // Mark user unsubscribed
         await adminDb
           .doc(`users/${firebaseUid}`)
           .set({ hasActiveSubscription: false }, { merge: true });
@@ -104,5 +111,6 @@ export async function POST(req: Request) {
       console.log("ℹ️ Unhandled event type:", event.type);
   }
 
+  // 7️⃣ Acknowledge receipt
   return NextResponse.json({ received: true });
 }
