@@ -14,6 +14,9 @@ import {
   User,
   sendEmailVerification,
   signOut,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 import {
   doc,
@@ -54,6 +57,10 @@ type AuthContextType = {
   hasActiveSubscription: boolean;
   userData: UserData | null;
   updateProfile: (data: Partial<UserData>) => Promise<void>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -147,6 +154,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    if (!user || !user.email) {
+      throw new Error("No user logged in");
+    }
+
+    try {
+      // First, re-authenticate the user with their current password
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword
+      );
+      await reauthenticateWithCredential(user, credential);
+
+      // Then update the password
+      await updatePassword(user, newPassword);
+    } catch (error: unknown) {
+      console.error("Password change error:", error);
+
+      // Handle specific Firebase auth errors
+      if (error && typeof error === "object" && "code" in error) {
+        const firebaseError = error as { code: string };
+        if (firebaseError.code === "auth/wrong-password") {
+          throw new Error("Current password is incorrect");
+        } else if (firebaseError.code === "auth/weak-password") {
+          throw new Error(
+            "New password is too weak. Please choose a stronger password"
+          );
+        } else if (firebaseError.code === "auth/requires-recent-login") {
+          throw new Error("Please log in again to change your password");
+        }
+      }
+      throw new Error("Failed to change password. Please try again");
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -168,6 +213,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         hasActiveSubscription: userData?.hasActiveSubscription ?? false,
         userData,
         updateProfile,
+        changePassword,
       }}
     >
       {children}

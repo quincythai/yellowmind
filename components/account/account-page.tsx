@@ -1,6 +1,6 @@
 "use client";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { AccountTabs } from "@/components/account-tabs";
+import { AccountTabs } from "@/components/account/account-tabs";
 import { MindChatbot } from "@/components/mind-chatbot";
 
 export function AccountPage() {
