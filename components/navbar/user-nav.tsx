@@ -37,6 +37,10 @@ export function UserNav() {
     }
   };
 
+  const handleTabNavigation = (tab: string) => {
+    router.push(`/account?tab=${tab}`);
+  };
+
   return (
     <div className="flex items-center gap-3">
       {/* Book Appointment Button */}
@@ -75,14 +79,16 @@ export function UserNav() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild>
-            <Link href="/account">Profile</Link>
+          <DropdownMenuItem onClick={() => handleTabNavigation("profile")}>
+            Profile
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/account?tab=billing">Billing</Link>
+          <DropdownMenuItem onClick={() => handleTabNavigation("billing")}>
+            Billing
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/account?tab=notifications">Notifications</Link>
+          <DropdownMenuItem
+            onClick={() => handleTabNavigation("notifications")}
+          >
+            Notifications
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout} className="text-red-600">

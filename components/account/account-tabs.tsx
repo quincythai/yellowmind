@@ -1,12 +1,21 @@
 "use client";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/components/profile/profile-settings";
 import { BillingSettings } from "@/components/billing-settings";
 import { NotificationSettings } from "@/components/notification-settings";
 
 export function AccountTabs() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const activeTab = searchParams.get("tab") || "profile";
+
+  const handleTabChange = (value: string) => {
+    router.push(`/account?tab=${value}`);
+  };
+
   return (
-    <Tabs defaultValue="profile" className="w-full">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="profile">Profile</TabsTrigger>
         <TabsTrigger value="billing">Billing</TabsTrigger>
