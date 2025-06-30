@@ -2,8 +2,7 @@
 
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { doc, setDoc, deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebaseAdmin";
 
 export const config = { api: { bodyParser: false } };
 
@@ -34,12 +33,10 @@ export async function POST(req: Request) {
 
   console.log("🔔 Stripe Event:", event.type);
 
-  // central upsert logic
   async function handleSubscriptionUpdate(
     sub: Stripe.Subscription,
     fallbackUid?: string
   ) {
-    // metadata.uid is now on the subscription itself
     const firebaseUid = sub.metadata.uid || fallbackUid;
     if (!firebaseUid) {
       console.warn("⚠️ No UID for subscription", sub.id);
@@ -52,20 +49,19 @@ export async function POST(req: Request) {
       status: sub.status,
       currentPeriodStart: new Date(sub.current_period_start * 1000),
       currentPeriodEnd:   new Date(sub.current_period_end   * 1000),
-      // default undefined → false
       cancelAtPeriodEnd:  sub.cancelAtPeriodEnd ?? false,
     };
 
-    // write subscription record
-    await setDoc(doc(db, "subscriptions", sub.id), data, { merge: true });
+    // upsert subscription
+    await adminDb
+      .doc(`subscriptions/${sub.id}`)
+      .set(data, { merge: true });
 
-    // update the user’s subscription flag
+    // update user's subscription flag
     const isActive = ["active", "trialing"].includes(sub.status);
-    await setDoc(
-      doc(db, "users", firebaseUid),
-      { hasActiveSubscription: isActive },
-      { merge: true }
-    );
+    await adminDb
+      .doc(`users/${firebaseUid}`)
+      .set({ hasActiveSubscription: isActive }, { merge: true });
   }
 
   switch (event.type) {
@@ -74,7 +70,6 @@ export async function POST(req: Request) {
       const fallbackUid = session.metadata.uid as string | undefined;
 
       if (session.mode === "subscription" && session.subscription) {
-        // retrieve the subscription with its metadata
         const sub = await stripe.subscriptions.retrieve(
           session.subscription as string
         );
@@ -95,12 +90,12 @@ export async function POST(req: Request) {
       const sub = event.data.object as Stripe.Subscription;
       const firebaseUid = sub.metadata.uid as string | undefined;
       if (firebaseUid) {
-        await deleteDoc(doc(db, "subscriptions", sub.id));
-        await setDoc(
-          doc(db, "users", firebaseUid),
-          { hasActiveSubscription: false },
-          { merge: true }
-        );
+        // delete subscription doc
+        await adminDb.doc(`subscriptions/${sub.id}`).delete();
+        // mark user as unsubscribed
+        await adminDb
+          .doc(`users/${firebaseUid}`)
+          .set({ hasActiveSubscription: false }, { merge: true });
       }
       break;
     }
