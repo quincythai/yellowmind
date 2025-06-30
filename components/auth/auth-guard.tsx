@@ -5,7 +5,7 @@ import type React from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Lock, CreditCard, Mail, Loader2 } from "lucide-react";
+import { Brain, CreditCard, Mail, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { loadStripe } from "@stripe/stripe-js";
 
@@ -21,11 +21,13 @@ export function AuthGuard({ children }: AuthGuardProps) {
   );
 
   const redirectToCheckout = async () => {
+    if (!user) return;
+
     const stripe = await stripePromise;
     const res = await fetch("/api/create-checkout-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: user.email, uid: user.uid }),
+      body: JSON.stringify({ email: user?.email, uid: user?.uid }),
     });
 
     const data = await res.json();
@@ -70,7 +72,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
           <CardContent className="space-y-4">
             <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-sm text-orange-800">
-                We've sent a verification email to{" "}
+                We&apos;ve sent a verification email to{" "}
                 <strong>{user?.email}</strong>
               </p>
             </div>
@@ -116,7 +118,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
           <CardContent className="space-y-6">
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
               <h3 className="font-semibold text-purple-800 mb-2">
-                What you'll get with Premium:
+                What you&apos;ll get with Premium:
               </h3>
               <ul className="space-y-1 text-sm text-purple-700">
                 <li>• 8 comprehensive emotional intelligence modules</li>
@@ -137,12 +139,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
             <div className="space-y-2">
               <Button
-                asChild
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                onClick={redirectToCheckout}
               >
-                <Link href="/subscription" onClick={redirectToCheckout}>
-                  Subscribe
-                </Link>
+                Subscribe
               </Button>
               <Button
                 asChild
