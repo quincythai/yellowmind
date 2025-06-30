@@ -23,7 +23,7 @@ export function SignupCompletePage() {
       if (user) {
         await user.reload(); // force refresh of emailVerified status
         if (user.emailVerified) {
-          router.push("/subscription");
+          router.push("/");
         }
       }
     }, 3000); // checks every 3 seconds

@@ -2,32 +2,74 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Save, User } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 export function ProfileSettings() {
+  const { user, userData, updateProfile } = useAuth();
+
   const [formData, setFormData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    bio: "Passionate about emotional intelligence and personal development. Currently working through the YELLOW Mind program to enhance my self-awareness and stress management skills.",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
     timezone: "EST",
     language: "English",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize form data from auth context
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        email: user?.email || "",
+        phone: userData.phone || "",
+        timezone: userData.timezone || "EST",
+        language: userData.language || "English",
+      });
+    }
+  }, [userData, user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Profile updated:", formData);
+    setIsLoading(true);
+
+    try {
+      await updateProfile({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        timezone: formData.timezone,
+        language: formData.language,
+      });
+
+      // You might want to show a success toast here
+      console.log("Profile updated successfully");
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      // You might want to show an error toast here
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="space-y-6">
@@ -44,10 +86,10 @@ export function ProfileSettings() {
             <div className="relative">
               <Avatar className="w-24 h-24">
                 <AvatarImage
-                  src="/placeholder.svg?height=96&width=96"
+                  src={user?.photoURL || "/placeholder.svg?height=96&width=96"}
                   alt="Profile"
                 />
-                <AvatarFallback className="text-xl">JD</AvatarFallback>
+                <AvatarFallback className="text-xl">{initials}</AvatarFallback>
               </Avatar>
               <Button
                 size="sm"
@@ -91,6 +133,7 @@ export function ProfileSettings() {
                   onChange={(e) =>
                     setFormData({ ...formData, firstName: e.target.value })
                   }
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -101,6 +144,7 @@ export function ProfileSettings() {
                   onChange={(e) =>
                     setFormData({ ...formData, lastName: e.target.value })
                   }
+                  required
                 />
               </div>
             </div>
@@ -111,10 +155,12 @@ export function ProfileSettings() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                disabled
+                className="bg-gray-50"
               />
+              <p className="text-xs text-muted-foreground">
+                Email cannot be changed. Contact support if needed.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -125,19 +171,6 @@ export function ProfileSettings() {
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                placeholder="Tell us about yourself..."
-                value={formData.bio}
-                onChange={(e) =>
-                  setFormData({ ...formData, bio: e.target.value })
-                }
-                rows={4}
               />
             </div>
 
@@ -178,10 +211,11 @@ export function ProfileSettings() {
 
             <Button
               type="submit"
+              disabled={isLoading}
               className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
             >
               <Save className="h-4 w-4 mr-2" />
-              Save Changes
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </CardContent>
@@ -201,14 +235,26 @@ export function ProfileSettings() {
                   Your current subscription plan
                 </p>
               </div>
-              <Badge className="bg-green-100 text-green-700">Premium</Badge>
+              <Badge
+                className={
+                  userData?.hasActiveSubscription
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-700"
+                }
+              >
+                {userData?.hasActiveSubscription ? "Premium" : "Free"}
+              </Badge>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium">Account Created</h4>
                 <p className="text-sm text-muted-foreground">Member since</p>
               </div>
-              <span className="text-sm">January 15, 2024</span>
+              <span className="text-sm">
+                {userData?.createdAt
+                  ? new Date(userData.createdAt.toDate()).toLocaleDateString()
+                  : "N/A"}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <div>
@@ -219,9 +265,13 @@ export function ProfileSettings() {
               </div>
               <Badge
                 variant="outline"
-                className="bg-green-50 text-green-700 border-green-200"
+                className={
+                  user?.emailVerified
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : "bg-red-50 text-red-700 border-red-200"
+                }
               >
-                Verified
+                {user?.emailVerified ? "Verified" : "Not Verified"}
               </Badge>
             </div>
           </div>

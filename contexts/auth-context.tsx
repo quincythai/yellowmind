@@ -9,13 +9,20 @@ import {
 } from "react";
 import {
   createUserWithEmailAndPassword,
-  updateProfile,
+  updateProfile as updateFirebaseProfile,
   onAuthStateChanged,
   User,
   sendEmailVerification,
   signOut,
 } from "firebase/auth";
-import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  getDoc,
+  updateDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
 // Define the payload expected for signups
@@ -28,21 +35,32 @@ type SignupPayload = {
   subscribeNewsletter?: boolean;
 };
 
+type UserData = {
+  hasActiveSubscription: boolean;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  timezone?: string;
+  language?: string;
+  subscribeNewsletter: boolean;
+  createdAt: Timestamp;
+};
+
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   signup: (data: SignupPayload) => Promise<void>;
   logout: () => Promise<void>;
   hasActiveSubscription: boolean;
+  userData: UserData | null;
+  updateProfile: (data: Partial<UserData>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userData, setUserData] = useState<{
-    hasActiveSubscription: boolean;
-  } | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Fetch Firestore user doc
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         if (userDoc.exists()) {
-          setUserData(userDoc.data() as { hasActiveSubscription: boolean });
+          setUserData(userDoc.data() as UserData);
         } else {
           setUserData(null);
         }
@@ -89,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await sendEmailVerification(userCredential.user, actionCodeSettings);
 
       // Optional: set display name
-      await updateProfile(user, {
+      await updateFirebaseProfile(user, {
         displayName: `${data.firstName} ${data.lastName}`,
       });
 
@@ -114,6 +132,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateProfile = async (data: Partial<UserData>) => {
+    if (!user) throw new Error("No user logged in");
+
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, data);
+
+      // Update local state
+      setUserData((prev) => (prev ? { ...prev, ...data } : null));
+    } catch (error) {
+      console.error("Profile update error:", error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -133,6 +166,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         isLoading,
         hasActiveSubscription: userData?.hasActiveSubscription ?? false,
+        userData,
+        updateProfile,
       }}
     >
       {children}
