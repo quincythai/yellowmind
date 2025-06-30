@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Camera, Save, User } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Camera, Save, User } from "lucide-react";
 
 export function ProfileSettings() {
   const [formData, setFormData] = useState({
@@ -21,13 +21,13 @@ export function ProfileSettings() {
     bio: "Passionate about emotional intelligence and personal development. Currently working through the YELLOW Mind program to enhance my self-awareness and stress management skills.",
     timezone: "EST",
     language: "English",
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle form submission
-    console.log("Profile updated:", formData)
-  }
+    console.log("Profile updated:", formData);
+  };
 
   return (
     <div className="space-y-6">
@@ -43,16 +43,25 @@ export function ProfileSettings() {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Avatar className="w-24 h-24">
-                <AvatarImage src="/placeholder.svg?height=96&width=96" alt="Profile" />
+                <AvatarImage
+                  src="/placeholder.svg?height=96&width=96"
+                  alt="Profile"
+                />
                 <AvatarFallback className="text-xl">JD</AvatarFallback>
               </Avatar>
-              <Button size="sm" className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0" variant="outline">
+              <Button
+                size="sm"
+                className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
+                variant="outline"
+              >
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold">Update your photo</h3>
-              <p className="text-sm text-muted-foreground">Upload a new profile picture. Recommended size: 400x400px</p>
+              <p className="text-sm text-muted-foreground">
+                Upload a new profile picture. Recommended size: 400x400px
+              </p>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">
                   Upload New
@@ -79,7 +88,9 @@ export function ProfileSettings() {
                 <Input
                   id="firstName"
                   value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, firstName: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -87,7 +98,9 @@ export function ProfileSettings() {
                 <Input
                   id="lastName"
                   value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lastName: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -98,7 +111,9 @@ export function ProfileSettings() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
             </div>
 
@@ -107,7 +122,9 @@ export function ProfileSettings() {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
               />
             </div>
 
@@ -117,7 +134,9 @@ export function ProfileSettings() {
                 id="bio"
                 placeholder="Tell us about yourself..."
                 value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, bio: e.target.value })
+                }
                 rows={4}
               />
             </div>
@@ -128,7 +147,9 @@ export function ProfileSettings() {
                 <select
                   id="timezone"
                   value={formData.timezone}
-                  onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, timezone: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="EST">Eastern Time (EST)</option>
@@ -142,7 +163,9 @@ export function ProfileSettings() {
                 <select
                   id="language"
                   value={formData.language}
-                  onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, language: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 >
                   <option value="English">English</option>
@@ -174,7 +197,9 @@ export function ProfileSettings() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium">Membership Status</h4>
-                <p className="text-sm text-muted-foreground">Your current subscription plan</p>
+                <p className="text-sm text-muted-foreground">
+                  Your current subscription plan
+                </p>
               </div>
               <Badge className="bg-green-100 text-green-700">Premium</Badge>
             </div>
@@ -188,9 +213,14 @@ export function ProfileSettings() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium">Email Verified</h4>
-                <p className="text-sm text-muted-foreground">Your email is verified</p>
+                <p className="text-sm text-muted-foreground">
+                  Your email is verified
+                </p>
               </div>
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <Badge
+                variant="outline"
+                className="bg-green-50 text-green-700 border-green-200"
+              >
                 Verified
               </Badge>
             </div>
@@ -198,5 +228,5 @@ export function ProfileSettings() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

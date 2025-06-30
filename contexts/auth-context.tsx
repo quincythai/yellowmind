@@ -13,6 +13,7 @@ import {
   onAuthStateChanged,
   User,
   sendEmailVerification,
+  signOut,
 } from "firebase/auth";
 import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -31,6 +32,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   signup: (data: SignupPayload) => Promise<void>;
+  logout: () => Promise<void>;
   hasActiveSubscription: boolean;
 };
 
@@ -112,11 +114,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      // The onAuthStateChanged listener will automatically update the user state
+      // and clear userData when the user signs out
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         signup,
+        logout,
         isLoading,
         hasActiveSubscription: userData?.hasActiveSubscription ?? false,
       }}

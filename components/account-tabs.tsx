@@ -1,9 +1,9 @@
-"use client"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ProfileSettings } from "@/components/profile-settings"
-import { BillingSettings } from "@/components/billing-settings"
-import { NotificationSettings } from "@/components/notification-settings"
-import { SecuritySettings } from "@/components/security-settings"
+"use client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProfileSettings } from "@/components/profile/profile-settings";
+import { BillingSettings } from "@/components/billing-settings";
+import { NotificationSettings } from "@/components/notification-settings";
+import { SecuritySettings } from "@/components/security-settings";
 
 export function AccountTabs() {
   return (
@@ -31,5 +31,5 @@ export function AccountTabs() {
         <SecuritySettings />
       </TabsContent>
     </Tabs>
-  )
+  );
 }
