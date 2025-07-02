@@ -1,164 +1,166 @@
 "use client";
 
-import type React from "react";
-
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, CreditCard, Mail, Loader2 } from "lucide-react";
+import { Brain, CreditCard, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { loadStripe } from "@stripe/stripe-js";
+import { useRouter } from "next/navigation";
 
 interface AuthGuardProps {
   children: React.ReactNode;
+  requireRole?: "admin";
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
-  const { user, isLoading, hasActiveSubscription } = useAuth();
+export function AuthGuard({ children, requireRole }: AuthGuardProps) {
+  const { user, isLoading, hasActiveSubscription, userData } = useAuth();
+  const router = useRouter();
+  const isAdmin = userData?.role === "admin";
 
+  // Stripe loader
   const stripePromise = loadStripe(
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
   );
-
   const redirectToCheckout = async () => {
     if (!user) return;
-
     const stripe = await stripePromise;
     const res = await fetch("/api/create-checkout-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: user?.email, uid: user?.uid }),
+      body: JSON.stringify({ email: user.email, uid: user.uid }),
     });
-
-    const data = await res.json();
-    await stripe?.redirectToCheckout({ sessionId: data.sessionId });
+    const { sessionId } = await res.json();
+    await stripe?.redirectToCheckout({ sessionId });
   };
 
-  // Loading state
+  // ➡️ Move all router.replace calls into useEffect
+  useEffect(() => {
+    if (isLoading) return; // **wait** until auth status settles
+
+    // 2️⃣ Not signed in
+    if (!user) {
+      router.replace("/login");
+      return;
+    }
+
+    // 3️⃣ Role enforcement
+    if (requireRole === "admin" && !isAdmin) {
+      router.replace("/");
+      return;
+    }
+
+    // 3.5️⃣ Admin hitting regular pages
+    if (!requireRole && isAdmin) {
+      router.replace("/admin");
+      return;
+    }
+  }, [isLoading, user, requireRole, isAdmin, router]);
+
+  // 1️⃣ Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-yellow-400 rounded-2xl flex items-center justify-center mx-auto">
-            <Brain className="h-8 w-8 text-yellow-900" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 via-white to-orange-50">
+        <Loader2 className="h-8 w-8 animate-spin text-yellow-600" />
       </div>
     );
   }
 
-  // Email not verified
-  if (!user?.emailVerified) {
+  // 2️⃣ Block UI until redirect effect runs
+  if (
+    !user ||
+    (requireRole === "admin" && !isAdmin) ||
+    (!requireRole && isAdmin)
+  ) {
+    return null;
+  }
+
+  // 4️⃣ Email verification
+  if (!user.emailVerified) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-0 shadow-xl">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-yellow-50 via-white to-orange-50">
+        <Card className="max-w-md w-full shadow">
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                <Mail className="h-8 w-8 text-orange-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-orange-600">
-              Email Verification Required
-            </CardTitle>
+            <Brain className="mx-auto mb-2 h-8 w-8 text-orange-600" />
+            <CardTitle>Email Verification Required</CardTitle>
             <p className="text-muted-foreground">
               Please verify your email to continue
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <p className="text-sm text-orange-800">
-                We&apos;ve sent a verification email to{" "}
-                <strong>{user?.email}</strong>
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Button
-                asChild
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-              >
-                <Link href="/signup-complete">Check Email & Verify</Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full bg-transparent"
-              >
-                <Link href="/login">Back to Sign In</Link>
-              </Button>
-            </div>
+            <p className="text-sm">
+              We&apos;ve sent a verification link to{" "}
+              <strong>{user.email}</strong>.
+            </p>
+            <Button
+              asChild
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500"
+            >
+              <Link href="/signup-complete">Resend &amp; Check Email</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Back to Sign In</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // No active subscription - paywall
+  // 5️⃣ Admin flow (skip subscription)
+  if (requireRole === "admin" || isAdmin) {
+    return <>{children}</>;
+  }
+
+  // 6️⃣ Subscription paywall
   if (!hasActiveSubscription) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-orange-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg border-0 shadow-xl">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-yellow-50 via-white to-orange-50">
+        <Card className="max-w-lg w-full shadow">
           <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                <CreditCard className="h-8 w-8 text-purple-600" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl text-purple-600">
-              Subscription Required
-            </CardTitle>
+            <CreditCard className="mx-auto mb-2 h-8 w-8 text-purple-600" />
+            <CardTitle>Subscription Required</CardTitle>
             <p className="text-muted-foreground">
               Unlock your emotional intelligence journey
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <h3 className="font-semibold text-purple-800 mb-2">
-                What you&apos;ll get with Premium:
-              </h3>
-              <ul className="space-y-1 text-sm text-purple-700">
-                <li>• 8 comprehensive emotional intelligence modules</li>
-                <li>• 1-on-1 coaching sessions with certified experts</li>
-                <li>• Live workshops and community access</li>
-                <li>• Progress tracking and certificates</li>
+            <div>
+              <p className="mb-2 font-semibold text-purple-800">
+                Premium access includes:
+              </p>
+              <ul className="list-disc list-inside text-sm text-purple-700 space-y-1">
+                <li>8 comprehensive modules</li>
+                <li>1-on-1 coaching sessions</li>
+                <li>Live workshops & community</li>
+                <li>Progress tracking & certificates</li>
               </ul>
             </div>
-
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-1">
+              <span className="block text-3xl font-bold text-purple-600">
                 $59/month
-              </div>
+              </span>
               <p className="text-sm text-muted-foreground">
                 30-day money-back guarantee
               </p>
             </div>
-
-            <div className="space-y-2">
-              <Button
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                onClick={redirectToCheckout}
-              >
-                Subscribe
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full bg-transparent"
-              >
-                <Link href="/login">Sign Out</Link>
-              </Button>
-            </div>
+            <Button
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+              onClick={redirectToCheckout}
+            >
+              Subscribe Now
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Sign Out</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // All checks passed - render the protected content
+  // 7️⃣ All checks passed
   return <>{children}</>;
 }
 

@@ -29,6 +29,7 @@ import {
 import { auth, db } from "@/lib/firebase";
 
 // Define the payload expected for signups
+
 type SignupPayload = {
   firstName: string;
   lastName: string;
@@ -38,7 +39,8 @@ type SignupPayload = {
   subscribeNewsletter?: boolean;
 };
 
-type UserData = {
+// Extend UserData to include optional role
+export type UserData = {
   hasActiveSubscription: boolean;
   firstName: string;
   lastName: string;
@@ -47,6 +49,7 @@ type UserData = {
   language?: string;
   subscribeNewsletter: boolean;
   createdAt: Timestamp;
+  role?: string; // "admin" or omitted
 };
 
 type AuthContextType = {
@@ -68,18 +71,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
 
-  // Listen for auth state changes
-  // This is used to update the user state when the user is logged in or logged out
-  // Also used to fetch the user data from Firestore
+  // Listen for auth state changes and fetch Firestore user data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-
       if (firebaseUser) {
-        // Fetch Firestore user doc
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         if (userDoc.exists()) {
           setUserData(userDoc.data() as UserData);
@@ -90,38 +88,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserData(null);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
   const signup = async (data: SignupPayload) => {
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(
+      const cred = await createUserWithEmailAndPassword(
         auth,
         data.email,
         data.password
       );
-
-      const user = userCredential.user;
-
-      // TODO: Change to production URL
-      const actionCodeSettings = {
-        url: "http://localhost:3000/", // Local redirect
+      const firebaseUser = cred.user;
+      // Send email verification
+      await sendEmailVerification(firebaseUser, {
+        url: "http://localhost:3000/",
         handleCodeInApp: false,
-      };
-
-      await sendEmailVerification(userCredential.user, actionCodeSettings);
-
-      // Optional: set display name
-      await updateFirebaseProfile(user, {
+      });
+      // Update display name
+      await updateFirebaseProfile(firebaseUser, {
         displayName: `${data.firstName} ${data.lastName}`,
       });
-
-      // Write additional user info to Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        uid: user.uid,
-        email: user.email,
+      // Write Firestore doc (role omitted for manual assignment)
+      await setDoc(doc(db, "users", firebaseUser.uid), {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
@@ -129,11 +120,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         createdAt: serverTimestamp(),
         hasActiveSubscription: false,
       });
-
-      setUser(user);
-    } catch (error) {
-      console.error("Signup error:", error);
-      throw error;
+      setUser(firebaseUser);
+    } catch (err) {
+      console.error("Signup error:", err);
+      throw err;
     } finally {
       setIsLoading(false);
     }
@@ -141,75 +131,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const updateProfile = async (data: Partial<UserData>) => {
     if (!user) throw new Error("No user logged in");
-
-    try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, data);
-
-      // Update local state
-      setUserData((prev) => (prev ? { ...prev, ...data } : null));
-    } catch (error) {
-      console.error("Profile update error:", error);
-      throw error;
-    }
+    await updateDoc(doc(db, "users", user.uid), data);
+    setUserData((prev) => (prev ? { ...prev, ...data } : null));
   };
 
   const changePassword = async (
     currentPassword: string,
     newPassword: string
   ) => {
-    if (!user || !user.email) {
-      throw new Error("No user logged in");
-    }
-
+    if (!user || !user.email) throw new Error("No user logged in");
     try {
-      // First, re-authenticate the user with their current password
-      const credential = EmailAuthProvider.credential(
-        user.email,
-        currentPassword
-      );
-      await reauthenticateWithCredential(user, credential);
-
-      // Then update the password
+      const cred = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, cred);
       await updatePassword(user, newPassword);
-    } catch (error: unknown) {
-      console.error("Password change error:", error);
-
-      // Handle specific Firebase auth errors
-      if (error && typeof error === "object" && "code" in error) {
-        const firebaseError = error as { code: string };
-        if (firebaseError.code === "auth/wrong-password") {
-          throw new Error("Current password is incorrect");
-        } else if (firebaseError.code === "auth/weak-password") {
-          throw new Error(
-            "New password is too weak. Please choose a stronger password"
-          );
-        } else if (firebaseError.code === "auth/requires-recent-login") {
-          throw new Error("Please log in again to change your password");
-        }
-      }
-      throw new Error("Failed to change password. Please try again");
+    } catch (err: any) {
+      console.error("Password change error:", err);
+      if (err.code === "auth/wrong-password")
+        throw new Error("Current password is incorrect");
+      if (err.code === "auth/weak-password")
+        throw new Error("New password is too weak");
+      if (err.code === "auth/requires-recent-login")
+        throw new Error("Please log in again");
+      throw new Error("Failed to change password");
     }
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-      // The onAuthStateChanged listener will automatically update the user state
-      // and clear userData when the user signs out
-    } catch (error) {
-      console.error("Logout error:", error);
-      throw error;
-    }
+    await signOut(auth);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        isLoading,
         signup,
         logout,
-        isLoading,
         hasActiveSubscription: userData?.hasActiveSubscription ?? false,
         userData,
         updateProfile,
@@ -222,9 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be within AuthProvider");
+  return ctx;
 };
